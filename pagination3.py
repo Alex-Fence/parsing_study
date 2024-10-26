@@ -11,6 +11,6 @@ r = requests.get(url)
 soup = BeautifulSoup(r.text, 'lxml')
 links_lst = [link['href'] for link in soup.find('div', class_='pagen').find_all('a')]
 print(links_lst)
-#item_cards = [link['href'] for link in soup.find_all('div', class_='img_box')]
-item_cards = soup.find_all('div', class_='img_box')
-print(item_cards[0].find_all('a', class_='name_item')[0].find('href')) #выводим ссылку на карточку товара
+item_cards = soup.select('a.name_item')
+item_links_lst = [item.get('href') for item in item_cards]
+print(item_links_lst)
