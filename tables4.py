@@ -15,7 +15,6 @@ def make_soup(url: str) -> BeautifulSoup:
 if __name__ == '__main__':
     url: str = 'https://parsinger.ru/table/4/index.html'
     soup = make_soup(url)
-    t_rows = soup.find_all('tr')
     # получаем список чисел с зеленым фоном
     green_nums = [float(gr_num.text) for gr_num in soup.select('td.green')]
     # альтеративный вариант
