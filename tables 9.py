@@ -26,16 +26,19 @@ def make_soup(url_link:str) -> BeautifulSoup:
 if __name__ == "__main__":
     url_link = "https://parsinger.ru/4.8/6/index.html"
     soup: BeautifulSoup = make_soup(url_link)
+    # номера пунктов которые нужно выбрать
     num_items_lst: list = [0, 1, 4, 7]
 
     headers_lst: list = [th.text for th in soup.find_all("th")]
-    print(headers_lst)
+    headers_lst = [th for th in headers_lst if headers_lst.index(th) in num_items_lst]
+    # print(headers_lst)
     rows_lst: list = [tr for tr in soup.find_all("tr")]
     json_lst: list = []
     for row in rows_lst[1:]:
          # print(row.find_all("td"))
          row_dt_lst : list = [dt.text for dt in row]
-         print(row_dt_lst)
+         row_dt_lst = [dt for dt in row_dt_lst if row_dt_lst.index(dt) in num_items_lst]
+         # print(row_dt_lst)
          json_lst.append(dict(zip(headers_lst, row_dt_lst)))
     for item in json_lst:
         print(item)
