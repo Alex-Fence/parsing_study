@@ -17,6 +17,7 @@
 import requests
 import json
 from bs4 import BeautifulSoup
+import pyperclip
 
 def make_soup(url_link:str) -> BeautifulSoup:
     response = requests.get(url_link)
@@ -38,7 +39,16 @@ if __name__ == "__main__":
          # print(row.find_all("td"))
          row_dt_lst : list = [dt.text for dt in row]
          row_dt_lst = [dt for dt in row_dt_lst if row_dt_lst.index(dt) in num_items_lst]
-         # print(row_dt_lst)
-         json_lst.append(dict(zip(headers_lst, row_dt_lst)))
+         row_dt_lst = [int(row_dt) if row_dt_lst.index(row_dt) in (1, 3) else row_dt for row_dt in row_dt_lst]
+         # Cтоимость не выше 4 000 000 (Стоимость авто <= 4000000),
+         # Год выпуска начиная с 2005 года (Год выпуска >= 2005),
+         # Тип двигателя - Бензиновый (Тип двигателя == "Бензиновый").
+         row_dict = dict(zip(headers_lst, row_dt_lst))
+         if row_dict['Стоимость авто'] <= 4000000 and row_dict['Год выпуска'] >= 2005 and row_dict['Тип двигателя'] == "Бензиновый":
+            json_lst.append(row_dict)
+    sorted(json_lst, key=lambda x: x["Стоимость авто"])
+    sorted_cars = json.dumps(json_lst, indent=4, ensure_ascii=False)
     for item in json_lst:
         print(item)
+    print(sorted_cars)
+    pyperclip.copy(sorted_cars)
