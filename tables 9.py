@@ -50,7 +50,7 @@ if __name__ == "__main__":
             json_lst.append(row_dict)
     # сортировка полученного списка словарей
     json_lst = sorted(json_lst, key=lambda x: x["Стоимость авто"])
-    # валидация для json
+    # валидация и формирование строки json
     sorted_cars = json.dumps(json_lst, indent=4, ensure_ascii=False)
     print(sorted_cars)
     pyperclip.copy(sorted_cars)
