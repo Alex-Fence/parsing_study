@@ -19,10 +19,12 @@ import json
 from bs4 import BeautifulSoup
 import pyperclip
 
-def make_soup(url_link:str) -> BeautifulSoup:
+
+def make_soup(url_link: str) -> BeautifulSoup:
     response = requests.get(url_link)
     response.encoding = "utf-8"
     return BeautifulSoup(response.text, "html.parser")
+
 
 if __name__ == "__main__":
     url_link = "https://parsinger.ru/4.8/6/index.html"
@@ -38,7 +40,7 @@ if __name__ == "__main__":
     json_lst: list = []
     for row in rows_lst[1:]:
         # получил список значений без тегов
-        row_dt_lst : list = [dt.text for dt in row]
+        row_dt_lst: list = [dt.text for dt in row]
         # убрал лишние значения в списке
         row_dt_lst = [dt for dt in row_dt_lst if row_dt_lst.index(dt) in num_items_lst]
         # преобразовал год выпуска и цену с числовой формат
@@ -46,7 +48,8 @@ if __name__ == "__main__":
         # получил словарь значений
         row_dict = dict(zip(headers_lst, row_dt_lst))
         # проверка на соответствие фильтру, если да то добавляю в словарь
-        if row_dict['Стоимость авто'] <= 4000000 and row_dict['Год выпуска'] >= 2005 and row_dict['Тип двигателя'] == "Бензиновый":
+        if (row_dict['Стоимость авто'] <= 4000000 and row_dict['Год выпуска'] >= 2005 and
+                row_dict['Тип двигателя'] == "Бензиновый"):
             json_lst.append(row_dict)
     # сортировка полученного списка словарей
     json_lst = sorted(json_lst, key=lambda x: x["Стоимость авто"])
