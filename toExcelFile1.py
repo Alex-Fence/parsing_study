@@ -19,20 +19,19 @@ def make_pages_list(first_page_link: str) -> list[str]:
     return [main_url + page for page in pagen_lst]
 
 
-
 # список товаров в каждой странице добавляет в общий список
-def make_goods_list(soup: BeautifulSoup)-> None:
+def make_goods_list(soup: BeautifulSoup) -> None:
     good_items = soup.find_all('div', class_='description')
     names_lst: list[str] = [i.text.strip() for i in soup.find_all('a', class_='name_item')]
     price_lst: list[str] = [i.text.strip() for i in soup.find_all('p', class_='price')]
 
     for index, good in enumerate(good_items):
-        #    goods_lst_dicts.append({d.text.split(': ')[0]: d.text.split(': ')[1]for d in good.find_all('li')})
         data_row: list[str] = [d.text.split(': ')[1].strip() for d in good.find_all('li')]
         data_row.insert(0, names_lst[index])
         data_row.append(price_lst[index])
         goods_lst_lists.append(data_row)
         print(data_row)
+
 
 # Запись в файл
 def write_to_csv(goods_lst_lists: list[list]) -> None:
@@ -49,9 +48,9 @@ if __name__ == '__main__':
     # получаем первую страницу
     first_page: str = 'https://parsinger.ru/html/index4_page_1.html'
     pages_lst: list[str] = make_pages_list(first_page)
-    # print(pages_lst)
+    # формирование списков для записи в файл с каждой страницы
     for page in pages_lst:
         soup: BeautifulSoup = make_soup(page)
         make_goods_list(soup)
-
+    # запись в файл
     write_to_csv(goods_lst_lists)
