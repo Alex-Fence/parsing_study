@@ -14,7 +14,7 @@ class ParsingSite:
                                        'Цена']  # Заголовки для запроса
         self.main_url: str = ''
         self.first_url: str = first_url
-        self.goods_lst: list[str] = []
+        self.goods_lst: list[dict] = []
 
     def make_soup(self, url_link: str) -> BeautifulSoup:
         response = requests.get(url_link)
@@ -23,10 +23,10 @@ class ParsingSite:
 
     def make_pagen_list(self, page_url: str) -> list[str]:
         soup: BeautifulSoup = self.make_soup(first_url)
-        pagen_lst: list[str] = [page_link.get('href') for page_link in soup.find('div', class_='pagen').find_all('a', href=True)]
+        pagen_lst: list[str] = [page_link.get('href') for page_link in
+                                soup.find('div', class_='pagen').find_all('a', href=True)]
         self.main_url = page_url[:-len(pagen_lst[0])]
-        pagen_lst = [self.main_url+pagen_page for pagen_page in pagen_lst]
-        print(pagen_lst)
+        pagen_lst = [self.main_url + pagen_page for pagen_page in pagen_lst]
         return pagen_lst
 
     def make_goods_lst(self, page_url: str) -> list[str]:
@@ -34,7 +34,7 @@ class ParsingSite:
         soup: BeautifulSoup = self.make_soup(page_url)
         # ["Наименование", "Бренд", "Форм-фактор", "Ёмкость", "Объем буферной памяти", "Цена"]
         good_items_lst = soup.find_all('div', class_='item')
-        #print((good_items_lst))
+
         for item in good_items_lst:
             # Наименование
             good_description_lst.append(item.find('a', class_='name_item').text.strip())
@@ -47,19 +47,19 @@ class ParsingSite:
             good_description_lst.append(item.find('div', class_='price_box').text)
             self.goods_lst.append(dict(zip(self.headers_lst, good_description_lst)))
             good_description_lst.clear()
-        for good in self.goods_lst:
-            print(good)
+
         return self.goods_lst
 
     def save_json(self, file_name):
         with open(file_name, 'w', encoding='utf-8') as json_file:
             json.dump(self.goods_lst, json_file, indent=4, ensure_ascii=False)
 
+
 if __name__ == '__main__':
     first_url: str = 'https://parsinger.ru/html/index4_page_1.html'
     parser = ParsingSite(first_url)
-    #print(parser.make_goods_lst(first_url))
 
     for page in parser.make_pagen_list(first_url):
         parser.make_goods_lst(page)
+
     parser.save_json('result_for_json1.json')
