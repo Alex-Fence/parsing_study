@@ -35,15 +35,17 @@ class ParsingSite:
         good_items_lst = soup.find_all('div', class_='item')
         #print((good_items_lst))
         for item in good_items_lst:
-            good_description_lst.append(item.find('a', class_='name_item').text)  # Наименование
+            # Наименование
+            good_description_lst.append(item.find('a', class_='name_item').text.strip())
             # Бренд,форм-фактор,Ёмкость,Объем буферной памяти
             description_lst = item.find('div', class_='description').find_all('li')
             description_lst = [description.text.split(': ')[1].strip() for description in description_lst]
-            print(description_lst)
             for description in description_lst:
                 good_description_lst.append(description)
-            good_description_lst.append(item.find('div', class_='price_box').text)  # Цена
-            self.goods_lst.append(good_description_lst)
+            # Цена
+            good_description_lst.append(item.find('div', class_='price_box').text)
+            self.goods_lst.append(good_description_lst.copy())
+            good_description_lst.clear()
         for good in self.goods_lst:
             print(good)
         return self.goods_lst
@@ -52,4 +54,4 @@ class ParsingSite:
 if __name__ == '__main__':
     first_url: str = 'https://parsinger.ru/html/index4_page_1.html'
     parser = ParsingSite(first_url)
-    print(len(parser.make_goods_lst(first_url)))
+    print(parser.make_goods_lst(first_url))
