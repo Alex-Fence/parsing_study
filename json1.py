@@ -9,9 +9,8 @@ from bs4 import BeautifulSoup
 
 
 class ParsingSite:
-    def __init__(self, first_url: str):
-        self.headers_lst: list[str] = ['Наименование', 'Бренд', 'Форм-фактор', 'Ёмкость', 'Объем буферной памяти',
-                                       'Цена']  # Заголовки для запроса
+    def __init__(self, first_url: str, headers_lst):
+        self.headers_lst: list[str] = headers_lst  # Заголовки для запроса
         self.main_url: str = ''
         self.first_url: str = first_url
         self.goods_lst: list[dict] = []
@@ -22,7 +21,7 @@ class ParsingSite:
         return BeautifulSoup(response.text, 'lxml')
 
     def make_pagen_list(self, page_url: str) -> list[str]:
-        soup: BeautifulSoup = self.make_soup(first_url)
+        soup: BeautifulSoup = self.make_soup(page_url)
         pagen_lst: list[str] = [page_link.get('href') for page_link in
                                 soup.find('div', class_='pagen').find_all('a', href=True)]
         self.main_url = page_url[:-len(pagen_lst[0])]
@@ -57,7 +56,8 @@ class ParsingSite:
 
 if __name__ == '__main__':
     first_url: str = 'https://parsinger.ru/html/index4_page_1.html'
-    parser = ParsingSite(first_url)
+    headers_lst = ['Наименование', 'Бренд', 'Форм-фактор', 'Ёмкость', 'Объем буферной памяти', 'Цена']
+    parser = ParsingSite(first_url, headers_lst)
 
     for page in parser.make_pagen_list(first_url):
         parser.make_goods_lst(page)
