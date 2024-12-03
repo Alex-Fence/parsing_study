@@ -7,14 +7,16 @@
 import json
 import requests
 from bs4 import BeautifulSoup
-from json1 import ParsingSite
 
 
+# создание супа
 def make_soup(url_link: str) -> BeautifulSoup:
     response = requests.get(url_link)
     response.encoding = 'utf-8'
     return BeautifulSoup(response.text, 'lxml')
 
+
+# создание списка url страниц пагинации по определенному виду товаров
 def make_pagen_list(page_url: str) -> list[str]:
     soup: BeautifulSoup = make_soup(page_url)
     pagen_lst: list[str] = [page_link.get('href') for page_link in
@@ -23,8 +25,10 @@ def make_pagen_list(page_url: str) -> list[str]:
     pagen_lst = [main_url + pagen_page for pagen_page in pagen_lst]
     return pagen_lst
 
-def make_header_lst(url: str) -> list[str]:
-    soup = make_soup(url)
+
+# создание списка пунктов описания товара( в этом варианте они у каждого товара даже в одной категории могут отличаться)
+def make_header_lst(item_soup: BeautifulSoup) -> list[str]:
+    soup = item_soup
     headers_lst: list[str] = ['Наименование']
     description_lst = [d.text.split(':')[0] for d in soup.find('div', class_='description').find_all('li')]
     for d in description_lst:
@@ -33,25 +37,27 @@ def make_header_lst(url: str) -> list[str]:
     return headers_lst
 
 
-def make_menu_lst(url: str):
+# создание списка url страниц по меню слева, категории товаров
+def make_menu_lst(url: str) -> list[str]:
     soup: BeautifulSoup = make_soup(url)
     menu_list: list[str] = [m_url.get('href') for m_url in soup.find('div', class_='nav_menu').find_all('a')]
-    return menu_list
+    return [main_url + menu_url for menu_url in menu_list]
 
-
-def make_res_lst_by_page(page_url: str, headers_lst: list[str]):
-    page_dict: dict = {}
+# формирование словаря свойств по каждому товару на странице и запись в глобальный список
+def make_res_lst_by_page(page_url: str) -> None:
     page_soup: BeautifulSoup = make_soup(page_url)
     items_soup: BeautifulSoup = page_soup.find_all('div', class_='item')
     for item_soup in items_soup:
-        description_lst = [item_soup.find('a', class_='name_item').text.strip()] + [d.text.split(':')[1].strip() for d in
-                                                                            item_soup.find('div',
-                                                                                           class_='description').find_all(
-                                                                                'li')]
+        headers_lst = make_header_lst(item_soup)
+        description_lst = [item_soup.find('a', class_='name_item').text.strip()] + [d.text.split(':')[1].strip() for d
+                                                                                    in item_soup.find('div',
+                                                                                                      class_='description').find_all(
+                'li')]
         description_lst.append(item_soup.find('p', class_='price').text)
         res_lst.append(dict(zip(headers_lst, description_lst)))
         description_lst.clear()
 
+# запись глобального списка в json
 def save_to_json(res_lst, file_name):
     with open(file_name, 'w', encoding='utf-8') as json_file:
         json.dump(res_lst, json_file, indent=4, ensure_ascii=False)
@@ -60,24 +66,13 @@ def save_to_json(res_lst, file_name):
 if __name__ == '__main__':
     res_lst: list[dict] = []
     first_url = 'https://parsinger.ru/html/index1_page_1.html'
-    headers_lst = make_header_lst(first_url)
-    # ["Наименование", "Бренд", "Тип подключения", "Цвет", "Тип наушников", "Цена"]
-    parser = ParsingSite(first_url, headers_lst)
-    pagen_lst = parser.make_pagen_list('https://parsinger.ru/html/index1_page_1.html')
-    main_url = parser.main_url
-    menu_lst = [main_url + menu_url for menu_url in make_menu_lst(first_url)]
-    # print(pagen_lst)
-    # print(headers_lst)
-    # print(main_url)
-    # print(menu_lst)
+    main_url = 'https://parsinger.ru/html/'
+    menu_lst = make_menu_lst(first_url)
+
     for menu_url in menu_lst:
-
         pagen_lst = make_pagen_list(menu_url)
-
         for page_url in pagen_lst:
-            headers_lst = make_header_lst(page_url)
-            print(headers_lst, page_url)
-            make_res_lst_by_page(page_url, headers_lst)
+            make_res_lst_by_page(page_url)
     for res in res_lst:
         print(res)
     save_to_json(res_lst, 'result_for_json2.json')
