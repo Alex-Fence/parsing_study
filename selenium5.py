@@ -19,5 +19,5 @@ with webdriver.Chrome() as browser:
     print(res)
     time.sleep(10)
 pyperclip.copy(str(res))
-print(res)
+
 
